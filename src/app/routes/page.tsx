@@ -1,11 +1,11 @@
-import { getDb } from '@/lib/db';
+import { sql } from '@/lib/db';
 import { Route } from '@/types';
 import Link from 'next/link';
 import { formatDuration, formatCurrency } from '@/lib/utils';
 
 async function getRoutes(): Promise<Route[]> {
-  const db = getDb();
-  return db.prepare('SELECT * FROM routes WHERE status = ? ORDER BY origin, destination').all('active') as Route[];
+  const rows = await sql`SELECT * FROM routes WHERE status = 'active' ORDER BY origin, destination`;
+  return rows as Route[];
 }
 
 export default async function RoutesPage() {

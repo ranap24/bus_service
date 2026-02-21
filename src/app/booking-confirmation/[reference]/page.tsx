@@ -1,4 +1,4 @@
-import { getDb } from '@/lib/db';
+import { sql } from '@/lib/db';
 import { Booking } from '@/types';
 import Link from 'next/link';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -14,8 +14,7 @@ interface BookingWithDetails extends Booking {
 }
 
 async function getBookingByRef(ref: string): Promise<BookingWithDetails | null> {
-  const db = getDb();
-  const booking = db.prepare(`
+  const rows = await sql`
     SELECT b.*, 
       r.origin, r.destination, r.route_number,
       s.departure_time, s.arrival_time, s.travel_date,
@@ -24,9 +23,9 @@ async function getBookingByRef(ref: string): Promise<BookingWithDetails | null> 
     JOIN schedules s ON b.schedule_id = s.id
     JOIN routes r ON s.route_id = r.id
     JOIN buses bus ON s.bus_id = bus.id
-    WHERE b.booking_reference = ?
-  `).get(ref) as BookingWithDetails | null;
-  return booking;
+    WHERE b.booking_reference = ${ref}
+  `;
+  return (rows[0] as BookingWithDetails) ?? null;
 }
 
 export default async function BookingConfirmationPage({
